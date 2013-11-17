@@ -43,12 +43,11 @@ class AddFormWin {
 
         final JTextField timeIntervalInput = new JTextField(5);
         timeIntervalInput.setText("60");
-        JLabel enterInterval = new JLabel("Enter Interval In Seconds between two tweets from one account");
-        txtName = new JTextField(40);
-        txtCity = new JTextField(40);
-        txtState = new JTextField(40);
-        txtMail = new JTextField(40);
+        final JTextField timeIntervalInputMax = new JTextField(5);
+        timeIntervalInput.setText("180");
 
+        JLabel enterInterval = new JLabel("Enter Minimum Interval In Seconds between two tweets from one account");
+        JLabel enterMaxInterval = new JLabel("Enter Maximum Interval In Seconds between two tweets from one account");
         btnAddAcc = new JButton("Add Account");
 
         gbl = new GridBagLayout();
@@ -62,6 +61,8 @@ class AddFormWin {
         final JTextArea accountDispName = new JTextArea(BIG_ROWS, 50);
         final JTextArea statusDisplay = new JTextArea(BIG_ROWS, 50);
         statusDisplay.setEditable(false);
+        JScrollPane accountDispNameScroll=new JScrollPane(accountDispName);
+        JScrollPane statusDispScroll=new JScrollPane(statusDisplay);
         accountDispName.setEditable(false);
                 btnAddAcc.addActionListener(new ActionListener() {
             @Override
@@ -252,12 +253,9 @@ class AddFormWin {
         f1.add(clearAccount, makeGbc(0, 1, 1, 1));
         f1.add(accountDisplayNameHeader, makeGbc(1, 0));
         f1.add(accountStatusHeader, makeGbc(1, 1));
-        f1.add(accountDispName, makeGbc(2, 0));
-        f1.add(statusDisplay, makeGbc(2, 1));
+        f1.add(accountDispNameScroll, makeGbc(2, 0));
+        f1.add(statusDispScroll, makeGbc(2, 1));
         f1.add(enterInterval, makeGbc(3, 0));
-//        GridBagConstraints gbc = makeGbc(3, 1);
-//        gbc.fill = GridBagConstraints.NONE;
-//        gbc.anchor = GridBagConstraints.WEST;
         f1.add(timeIntervalInput, makeGbc(3,1));
         f1.add(new JLabel("Twitter Ids"), makeGbc(4, 0));
         f1.add(new JLabel("Tweets"), makeGbc(4, 1));
@@ -371,6 +369,7 @@ class TweeterThread implements Runnable {
                                     //To change body of implemented methods use File | Settings | File Templates.
                                     tweetLog.setText(tweetLog.getText() + tweets.size()+" ["+ mention + "] sent successfully from account @" + account.screenName + "\n");
                                     frame.validate();
+                                    frame.pack();
                                 }
                             });
 
@@ -405,6 +404,7 @@ class TweeterThread implements Runnable {
                                     tweetLog.setText(tweetLog.getText() + "failed to send tweet '" + mention + "' From Account " + account.screenName + "\n");
                                     tweets.push(mention);
                                     frame.validate();
+                                    frame.pack();
                                 }
                             });
                             AddFormWin.nThreads--;
@@ -426,7 +426,7 @@ class TweeterThread implements Runnable {
                                         }
                                         tweetLog.setText(tweetLog.getText()+"\nFailed to send the following tweets:\n"+finalString);
                                         JOptionPane.showMessageDialog(null, "Tweet Sending Failed!", "Failure!!", JOptionPane.WARNING_MESSAGE);
-
+                                        frame.pack();
                                     }
                                 });
                             return;
@@ -462,7 +462,7 @@ class TweeterThread implements Runnable {
                     }
                     tweetLog.setText(tweetLog.getText()+"\nFailed to send the following tweets:\n"+finalString);
                     JOptionPane.showMessageDialog(null, "All Tweets Sent Successfully!", "Success!!", JOptionPane.WARNING_MESSAGE);
-
+                    frame.pack();
                 }
             });
 
