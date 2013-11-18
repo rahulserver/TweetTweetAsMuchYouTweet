@@ -1,3 +1,5 @@
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
@@ -8,9 +10,9 @@ import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
 
 import javax.swing.*;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
+import java.util.ArrayList;
 
 /**
  * Created with IntelliJ IDEA.
@@ -25,19 +27,20 @@ public class Account {
     Twitter twitter;
     String appKey;
     String appSecret;
+    long id;
 
-    public Account(String appKey,String appSecret) throws Exception{
-        getAccessTokenAfterAuthentication(appKey,appSecret);
+    public Account(String appKey, String appSecret) throws Exception {
+        getAccessTokenAfterAuthentication(appKey, appSecret);
     }
 
-    public AccessToken getAccessTokenAfterAuthentication(String appKey,String appSecret) throws Exception {
+    public AccessToken getAccessTokenAfterAuthentication(String appKey, String appSecret) throws Exception {
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder.setOAuthConsumerKey(appKey);
         builder.setOAuthConsumerSecret(appSecret);
         Configuration configuration = builder.build();
         TwitterFactory factory = new TwitterFactory(configuration);
         Twitter twitter = factory.getInstance();
-        this.twitter=twitter;
+        this.twitter = twitter;
         //twitter.setOAuthConsumer(appKey, appSecret);
         RequestToken requestToken = twitter.getOAuthRequestToken("oob");
         AccessToken accessToken = null;
@@ -65,23 +68,83 @@ public class Account {
         }
         setAccessToken(accessToken);
         setScreenName(twitter.getScreenName());
+        setId(twitter.getId());
+        Gson gson = new Gson();
+        System.out.println("gson is to jsonnnnnnnnnnn       ------------           " + gson.toJson(this));
         return accessToken;
     }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
     public void updateStatus(String tweet) throws TwitterException {
 
-        Status status=twitter.updateStatus(tweet);
+        Status status = twitter.updateStatus(tweet);
 
     }
-    public AccessToken getAccessToken(){
+
+    public AccessToken getAccessToken() {
         return this.accessToken;
     }
-    public void setAccessToken(AccessToken accessToken){
-        this.accessToken=accessToken;
+
+    public void setAccessToken(AccessToken accessToken) {
+        this.accessToken = accessToken;
     }
-    public String getScreenName(){
+
+    public String getScreenName() {
         return this.screenName;
     }
-    public void setScreenName(String screenName){
-        this.screenName=screenName;
+
+    public void setScreenName(String screenName) {
+        this.screenName = screenName;
+    }
+
+    public boolean persistAccount() {
+        try {
+            Gson gson = new GsonBuilder().create();
+            String saveAccessToken = accessToken.getToken();
+            String saveAccessTokenSecret = accessToken.getTokenSecret();
+            String userDir = System.getProperty("user.home");
+            String twitterDir = userDir + File.separator + "TweetTweetAsMuchYouTweet";
+            File f = new File(twitterDir);
+            if (!f.exists())
+                f.mkdirs();
+            String fileName = twitterDir + File.separator + "Accounts.txt";
+            File storeFile = new File(fileName);
+            if (!storeFile.exists())
+                storeFile.createNewFile();
+            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(storeFile, true)));
+            out.println(gson.toJson(this));
+            out.close();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public static ArrayList<Account> getAccountList() {
+        Gson gson = new Gson();
+        ArrayList<Account> accountList = new ArrayList<Account>();
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(System.getProperty("user.home") + File.separator
+                    + "TweetTweetAsMuchYouTweet" + File.separator + "Accounts.txt")));
+            String s = "";
+            while ((s = br.readLine()) != null) {
+                Account account = gson.fromJson(s, Account.class);
+                accountList.add(account);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return accountList;
+    }
+
+    public static void main(String[] args) {
+        try {
+            new Account("key", "secret").persistAccount();
+        } catch (Exception e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
     }
 }
